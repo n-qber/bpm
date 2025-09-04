@@ -1,0 +1,23 @@
+{
+  "name": "baileys-control",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run tsc && node app/main.js",
+	"tsc": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@cacheable/node-cache": "^1.7.0",
+    "@hapi/boom": "^10.0.1",
+    "@types/node": "^24.3.0",
+    "@types/qrcode": "^1.5.5",
+    "@whiskeysockets/baileys": "^6.7.19",
+    "qrcode": "^1.5.4",
+    "typescript": "^5.9.2"
+  }
+}
