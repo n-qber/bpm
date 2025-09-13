@@ -10,7 +10,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@cacheable/node-cache": "^1.7.0",
     "@hapi/boom": "^10.0.1",

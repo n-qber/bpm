@@ -6,12 +6,16 @@
     "outDir": "./app",
 	"allowJs": true,
 
+	// idk how this works
+
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "esnext",
-	"moduleResolution": "bundler",
-    "target": "esnext",
+    "module": "CommonJS",
+	"moduleResolution": "node",
+	"esModuleInterop": true,
+    "target": "ESNext",
 	"lib": ["esnext"],
+	"esModuleInterop": true,
     "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
