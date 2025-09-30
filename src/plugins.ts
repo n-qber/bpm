@@ -89,6 +89,7 @@ async function loadPlugin(sock: WASocket, pluginName: string, oldOn: <T extends 
 
 async function reloadPlugin(sock: WASocket, pluginName: string)
 {
+	console.log(`[*] trying to reload plugin ${pluginName}`);
 	const oldOn = sock.ev.on;
 	if(pluginListeners[pluginName])
 	{
@@ -107,6 +108,26 @@ async function reloadPlugin(sock: WASocket, pluginName: string)
 	delete require.cache[modulePath];
 	await loadPlugin(sock, pluginName, oldOn);
 	sock.ev.on = oldOn;
+}
+
+async function reloadAllPlugins(sock: WASocket)
+{
+	console.log(`[*] trying to reload all plugins`);
+	const configPath = require.resolve('./plugins/config');
+	delete require.cache[configPath];
+	const { default: { plugins } } = require('./plugins/config');
+
+	for(const plugin of plugins)
+	{
+		try{
+			console.log(`[*] Loading ${plugin}`);
+			reloadPlugin(sock, plugin);
+		}catch(err)
+		{
+			console.error(err);
+			console.error(`[!] Could not reload plugin [${plugin}]`);
+		}
+	}
 }
 
 async function initPlugins(sock: WASocket)
@@ -130,6 +151,6 @@ async function initPlugins(sock: WASocket)
 	sock.ev.on = oldOn;
 }
 
-export { initPlugins, reloadPlugin }
+export { initPlugins, reloadPlugin, reloadAllPlugins }
 
 // CHANGE make a wrapper for const oldOn = sock.ev.on; sock.ev.on = oldOn;

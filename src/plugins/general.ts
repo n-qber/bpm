@@ -15,11 +15,6 @@ registerPlugin(async sock => {
 
 export default async (sock: WASocket) => {
 
-	console.log("[!] General plugin");
-	sock.ev.on('messages.upsert', async ({ messages }) => {
-
-		console.log("message's arrived");
-
-	});
+	console.log("[*] Loading general plugin");
 
 }
