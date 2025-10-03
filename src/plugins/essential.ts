@@ -4,7 +4,8 @@ import { reloadPlugin, reloadAllPlugins } from "../plugins";
 export default (sock: WASocket) => {
 
 
-	console.log("[*] Loading essential");
+	console.log("[*] Essential: main()");
+
 	sock.ev.on('messages.upsert', async ({ messages }) => {
 
 
@@ -17,17 +18,19 @@ export default (sock: WASocket) => {
 
 				if(cmd == 'reload' && args[0])
 				{
-					console.log(`[r] Reloading ${args[0]}`);
+					console.log(`[*] Essential: reloadPlugin(${args[0]})`);
 					reloadPlugin(sock, args[0]);
+					return;
 				}
 
 				if(cmd == 'reload')
 				{
+					console.log(`[*] Essential: reloadAllPlugins()`);
 					reloadAllPlugins(sock);
 				}
 			}
 		}
 
 
-	})
+	});
 }

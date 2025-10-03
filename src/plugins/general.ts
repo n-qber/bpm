@@ -1,20 +1,30 @@
-//import { registerPlugin } from 	'../src/plugins.ts';
-
 import { WASocket } from "@whiskeysockets/baileys";
-
-
-/*
-registerPlugin(async sock => {
-	sock.ev.on('messages.upsert', async ({ messages }) => {
-		console.log(messages);
-   });
-});
-*/
-
-
 
 export default async (sock: WASocket) => {
 
-	console.log("[*] Loading general plugin");
+	console.log("[*] General: main()");
+
+	sock.ev.on('messages.upsert', async ({ messages }) => {
+
+
+		for(const message of messages)
+		{
+			const content = message.message?.extendedTextMessage?.text;
+			if(content)
+			{
+				const [cmd, ...args] = content.split(" ");
+
+
+				if(cmd == 'clean')
+				{
+					console.clear();
+					console.log('\x1b[2J'); // linux
+					// I will remove this
+				}
+			}
+		}
+
+
+	});
 
 }

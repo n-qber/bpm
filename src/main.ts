@@ -58,6 +58,7 @@ async function main() {
 			// and abstracting wrapper functions for every action would
 			// require me to update the whole plugin system and consider security
 			// every single time
+			console.log('[*] BPM: initPlugins()')
 			await initPlugins(sock);
 		}
 	});

@@ -1,4 +1,5 @@
 import { BaileysEvent, BaileysEventMap, WASocket } from "@whiskeysockets/baileys";
+type BaileysListener = (arg: BaileysEventMap[BaileysEvent]) => void;
 
 
 // SOME THINGS IN THIS FILE REPRESENT HOW IT WOULD WORK BASED ON EXPORTING EVENTS
@@ -9,62 +10,16 @@ import { BaileysEvent, BaileysEventMap, WASocket } from "@whiskeysockets/baileys
 	* every plugin should export functions that react to events
 */
 
+export const pluginListeners: Record<string, Partial<Record<BaileysEvent, BaileysListener[]>>> = {}
 
-//const pluginListeners: Record<BaileysEvent, BaileysListener>[] = [];
-
-const pluginListeners: Record<string, Partial<Record<BaileysEvent, BaileysListener[]>>> = {}
-
-
-function loadPlugins(sock: WASocket, pluginsToLoad: string[])
-{
-	/*
-	for(const [eventName, listener] of pluginListeners)
-	{
-		sock.ev.on(eventName, listener);
-	}
-	*/
-}
-
-
-type BaileysListener = (arg: BaileysEventMap[BaileysEvent]) => void;
-
-
-/*
-function registerPluginListener(event: BaileysEvent, listener: BaileysListener)
-{
-	pluginListeners.push({ [event]: listener })
-}
-*/
 
 
 // must be async maybe so loading doesnt block
 type PluginModule = ((sock: WASocket) => Promise<void>);
-const registeredPlugins: PluginModule[] = [];
-
-function registerPlugin(plugin: PluginModule)
-{
-	registeredPlugins.push(plugin);
-}
-
-function loadRegisteredPlugins(sock: WASocket)
-{
-	for (const plugin of registeredPlugins)
-	{
-		try{
-			console.log('loadinnng');
-			plugin(sock)
-			console.log('loadeddd');
-		}catch(err)
-		{
-			sock.logger.info("[!] Couldn't load module");
-			sock.logger.error(err);
-		}
-	}
-}
-
 
 async function loadPlugin(sock: WASocket, pluginName: string, oldOn: <T extends keyof BaileysEventMap>(event: T, listener: (arg: BaileysEventMap[T]) => void) => void)
 {
+	console.log(`\t[*] PlugManager: loadPlugin(${pluginName})`);
 	sock.ev.on = (event, listener) => {
 		if(!pluginListeners[pluginName])
 			pluginListeners[pluginName] = {};
@@ -87,9 +42,28 @@ async function loadPlugin(sock: WASocket, pluginName: string, oldOn: <T extends 
 	}
 }
 
+async function cleanPlugin(sock: WASocket, pluginName: string)
+{
+	console.log(`[*] PlugManager: cleanPlugin(${pluginName})`);
+	try{
+		const plugin = require(`./plugins/${pluginName}`);
+		if(plugin.clean)
+		{
+			console.log(`\t[*] PlugManager: ${pluginName}.clean()`);
+			await plugin.clean();
+		}
+	}catch(err){
+		// TODO error logging
+		// CHANGE move this outside?
+		console.log(`\t[!] PlugManager: error cleaning ${pluginName}`);
+		console.error(err);
+	}
+}
+
+
 async function reloadPlugin(sock: WASocket, pluginName: string)
 {
-	console.log(`[*] trying to reload plugin ${pluginName}`);
+	console.log(`\t[*] PlugManager: reloadPlugin(${pluginName})`);
 	const oldOn = sock.ev.on;
 	if(pluginListeners[pluginName])
 	{
@@ -105,6 +79,7 @@ async function reloadPlugin(sock: WASocket, pluginName: string)
 		}
 	}
 	const modulePath = require.resolve(`./plugins/${pluginName}`);
+	await cleanPlugin(sock, pluginName);
 	delete require.cache[modulePath];
 	await loadPlugin(sock, pluginName, oldOn);
 	sock.ev.on = oldOn;
@@ -112,7 +87,7 @@ async function reloadPlugin(sock: WASocket, pluginName: string)
 
 async function reloadAllPlugins(sock: WASocket)
 {
-	console.log(`[*] trying to reload all plugins`);
+	console.log('[*] PlugManager: reloadAllPlugins()');
 	const configPath = require.resolve('./plugins/config');
 	delete require.cache[configPath];
 	const { default: { plugins } } = require('./plugins/config');
@@ -132,6 +107,7 @@ async function reloadAllPlugins(sock: WASocket)
 
 async function initPlugins(sock: WASocket)
 {
+	console.log('[*] PlugManager: initPlugins()')
 	const oldOn = sock.ev.on;
 
 	// TODO implement better error catching here

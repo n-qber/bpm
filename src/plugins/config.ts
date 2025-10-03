@@ -1,3 +1,3 @@
 export default {
-	plugins: ['essential', 'general']
+	plugins: ['general', 'api', 'essential']
 }
