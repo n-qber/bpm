@@ -5,14 +5,16 @@ import { initPlugins } from './plugins';
 
 
 import NodeCache from "@cacheable/node-cache";
-import makeWASocket, { Browsers, DisconnectReason, GroupMetadata, makeCacheableSignalKeyStore, type UserFacingSocketConfig } from "@whiskeysockets/baileys"
+import makeWASocket, { fetchLatestWaWebVersion, Browsers, DisconnectReason, GroupMetadata, makeCacheableSignalKeyStore, type UserFacingSocketConfig } from "@whiskeysockets/baileys"
 import { useMultiFileAuthState } from '@whiskeysockets/baileys';
 const groupCache = new NodeCache<GroupMetadata>();
 
 async function main() {
 
 	const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
+	const { version } = await fetchLatestWaWebVersion({});
 	const waSocketOptions: UserFacingSocketConfig = {
+		version,
 		auth: {
 			creds: state.creds,
 			keys: makeCacheableSignalKeyStore(state.keys)
@@ -20,7 +22,20 @@ async function main() {
 		browser: Browsers.windows("Desktop"),
 		markOnlineOnConnect: false,
 		cachedGroupMetadata: async jid => groupCache.get(jid),
-		logger: P()
+		logger: P({
+			transport: {
+				targets: [
+					{
+						target: 'pino-pretty',
+						options: { colorize: true}
+					},
+					{
+						target: 'pino/file',
+						options: { destination: `logs/app-${new Date().toISOString().replace(/:/g, '-').slice(0, 19)}.log`, mkdir: true }
+					}
+				]
+			}
+		})
 	}
 
 

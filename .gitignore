@@ -1,3 +1,4 @@
 app/*
 baileys_auth_info/*
 node_modules/*
+logs/*
