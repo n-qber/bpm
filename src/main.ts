@@ -1,7 +1,7 @@
 import QRCode from 'qrcode';
 import { Boom } from '@hapi/boom';
 import P from "pino";
-import { initPlugins } from './plugins';
+import { initPlugins, cleanAllPlugins } from './plugins';
 
 
 import NodeCache from "@cacheable/node-cache";
@@ -47,6 +47,20 @@ async function main() {
 		if (connection === 'close' && (lastDisconnect?.error as Boom)?.output?.statusCode === DisconnectReason.restartRequired) {
 			// create a new socket, this socket is now useless
 			return await main();
+		}
+
+		if (connection == 'close')
+		{
+			const errorCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+			switch (errorCode)
+			{
+				case DisconnectReason.timedOut:
+				case DisconnectReason.connectionClosed:
+					cleanAllPlugins(sock);
+					return await main();
+				default:
+					console.log(`[*] BPM: Disconnected: [${errorCode}]`);
+			}
 		}
 
 		if(qr)

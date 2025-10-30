@@ -42,6 +42,34 @@ async function loadPlugin(sock: WASocket, pluginName: string, oldOn: <T extends 
 	}
 }
 
+async function cleanAllPlugins(sock: WASocket)
+{
+	console.log('[*] PlugManager: cleanAllPlugins()');
+
+
+	// this MUST change
+	// i'm just lazy now sorry ;(
+	// because plugins/config can change while the program is running
+	// so some plugins might not be cleaned correctly
+	const configPath = require.resolve('./plugins/config');
+	delete require.cache[configPath];
+	const { default: { plugins } } = require('./plugins/config');
+
+	for(const plugin of plugins)
+	{
+		try{
+			console.log(`[*] Loading ${plugin}`);
+			cleanPlugin(sock, plugin);
+		}catch(err)
+		{
+			console.error(err);
+			console.error(`[!] Could not reload plugin [${plugin}]`);
+		}
+	}
+}
+
+
+
 async function cleanPlugin(sock: WASocket, pluginName: string)
 {
 	console.log(`[*] PlugManager: cleanPlugin(${pluginName})`);
@@ -127,6 +155,11 @@ async function initPlugins(sock: WASocket)
 	sock.ev.on = oldOn;
 }
 
-export { initPlugins, reloadPlugin, reloadAllPlugins }
+export {
+	initPlugins,
+	reloadPlugin,
+	reloadAllPlugins,
+	cleanAllPlugins
+}
 
 // CHANGE make a wrapper for const oldOn = sock.ev.on; sock.ev.on = oldOn;
